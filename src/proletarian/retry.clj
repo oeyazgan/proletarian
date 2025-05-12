@@ -61,4 +61,7 @@
         (log ::not-retrying {:retry-spec retry-spec})
         (db/archive-job! conn config job-id :failure finished-at)
         (db/delete-job! conn config job-id)
-        (failed-job-fn job e)))))
+        (try (failed-job-fn job e)
+             (catch Exception e
+               (log ::failed-job-fn-failed {:exception e})
+               (.interrupt (Thread/currentThread))))))))
